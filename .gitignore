@@ -1,0 +1,65 @@
+# Local configuration and secrets. Only the documented template is public.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Runtime data and exported evidence may contain private image or user data.
+data/
+backend/data/
+.local-data/
+uploads/
+raw/
+backups/
+trivy-cache/
+work/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.tar
+*.zip
+*.pdf
+*.sarif
+*.trivybackup
+trivy-report-*
+scan-*.json
+screenshots/
+
+# Local Compose overrides commonly contain private host paths.
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+compose.override.yaml
+
+# Python.
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+*.py[cod]
+.venv/
+venv/
+
+# Node, Vite, and generated frontend output.
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+*.log
+pnpm-debug.log*
+npm-debug.log*
+
+# Editors and operating systems.
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,3 @@
+import {normalizeSeverity,severityStyle} from '../severity'
+
+export default function SeverityBadge({value,count}:{value:string;count?:number}){const severity=normalizeSeverity(value),style=severityStyle(severity);return <span aria-label={`Severity ${severity}${count==null?'':`, ${count} findings`}`} className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold ring-1 ring-inset ${style.badge}`}><span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${style.dot}`}/>{severity}{count!=null&&<span className="tabular-nums opacity-80">{count.toLocaleString()}</span>}</span>}

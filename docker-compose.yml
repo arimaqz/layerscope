@@ -1,0 +1,153 @@
+name: layerscope
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+      args:
+        GO_IMAGE: ${GO_IMAGE:-public.ecr.aws/docker/library/golang:1.26.8-alpine@sha256:8ac98ca534ac3f51e1f420a1dd2c15e74c75cfa0f23f3ad27eb5d7236c349a0c}
+        TRIVY_IMAGE: ${TRIVY_IMAGE:-aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969}
+        TRIVY_VERSION: ${TRIVY_VERSION:-0.74.0}
+        TRIVY_SOURCE_SHA256: ${TRIVY_SOURCE_SHA256:-04268af574690b84bc3474a5f19e002cd6da3e16899fac9fd39c6e84e7843940}
+        TRIVY_GRPC_VERSION: ${TRIVY_GRPC_VERSION:-1.83.2}
+        TRIVY_DB_SEED_VERSION: ${TRIVY_DB_SEED_VERSION:-2026-09-25}
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    read_only: true
+    stop_signal: SIGTERM
+    stop_grace_period: 45s
+    pids_limit: 512
+    mem_limit: ${BACKEND_MEMORY_LIMIT:-4g}
+    memswap_limit: ${BACKEND_MEMORY_LIMIT:-4g}
+    cpus: "${BACKEND_CPU_LIMIT:-2.0}"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 4096
+        hard: 8192
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=1g,uid=10001,gid=10001,mode=1777
+    environment:
+      TRIVY_DASHBOARD_DATABASE_URL: "${DATABASE_URL:-sqlite:////data/trivy.db}"
+      TRIVY_DASHBOARD_RAW_RESULTS_DIR: "${RAW_RESULTS_DIR:-/data/raw}"
+      TRIVY_DASHBOARD_UPLOAD_DIR: "${UPLOAD_DIR:-/data/uploads}"
+      TRIVY_DASHBOARD_SCAN_ROOTS: "${SCAN_ROOTS:-/images,/data/uploads}"
+      TRIVY_DASHBOARD_SCAN_CONCURRENCY: "${SCAN_CONCURRENCY:-2}"
+      TRIVY_DASHBOARD_MAX_PENDING_SCANS: "${MAX_PENDING_SCANS:-100}"
+      TRIVY_DASHBOARD_TRIVY_BINARY: "${TRIVY_BINARY:-trivy}"
+      TRIVY_DASHBOARD_TRIVY_CACHE_DIR: "${TRIVY_CACHE_DIR:-/data/trivy-cache}"
+      TRIVY_DASHBOARD_TRIVY_TEMP_DIR: "${TRIVY_TEMP_DIR:-/data/trivy-tmp}"
+      TRIVY_DASHBOARD_COMPONENT_TEMP_DIR: "${COMPONENT_TEMP_DIR:-/data/component-tmp}"
+      TRIVY_DASHBOARD_TRIVY_DB_REPOSITORIES: "${TRIVY_DB_REPOSITORIES:-ghcr.io/aquasecurity/trivy-db:2,public.ecr.aws/aquasecurity/trivy-db:2}"
+      TRIVY_DASHBOARD_TRIVY_JAVA_DB_REPOSITORIES: "${TRIVY_JAVA_DB_REPOSITORIES:-ghcr.io/aquasecurity/trivy-java-db:1,public.ecr.aws/aquasecurity/trivy-java-db:1}"
+      TRIVY_DASHBOARD_TRIVY_SEED_CACHE_DIR: "${TRIVY_SEED_CACHE_DIR:-/opt/trivy-cache-seed}"
+      TRIVY_DASHBOARD_TRIVY_TIMEOUT_SECONDS: "${TRIVY_TIMEOUT_SECONDS:-1800}"
+      TRIVY_DASHBOARD_CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}"
+      TRIVY_DASHBOARD_TRUSTED_HOSTS: "${TRUSTED_HOSTS:-backend,localhost,127.0.0.1}"
+      TRIVY_DASHBOARD_TRUSTED_PROXY_CIDRS: "${TRUSTED_PROXY_CIDRS:-127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}"
+      TRIVY_DASHBOARD_AUTH_KEY_PATH: "${AUTH_KEY_PATH:-/data/auth.key}"
+      TRIVY_DASHBOARD_BACKUP_DIR: "${BACKUP_DIR:-/data/backups}"
+      TRIVY_DASHBOARD_AUTH_COOKIE_NAME: "${AUTH_COOKIE_NAME:-trivy_session}"
+      TRIVY_DASHBOARD_AUTH_COOKIE_SECURE: "${AUTH_COOKIE_SECURE:-false}"
+      TRIVY_DASHBOARD_AUTH_IDLE_MINUTES: "${AUTH_IDLE_MINUTES:-30}"
+      TRIVY_DASHBOARD_AUTH_ABSOLUTE_HOURS: "${AUTH_ABSOLUTE_HOURS:-8}"
+      TRIVY_DASHBOARD_AUTH_LOGIN_MAX_ATTEMPTS: "${AUTH_LOGIN_MAX_ATTEMPTS:-5}"
+      TRIVY_DASHBOARD_AUTH_LOCKOUT_MINUTES: "${AUTH_LOCKOUT_MINUTES:-15}"
+      TRIVY_DASHBOARD_AUTH_ACTIVATION_HOURS: "${AUTH_ACTIVATION_HOURS:-24}"
+      TRIVY_DASHBOARD_AUTH_MAX_SESSIONS_PER_USER: "${AUTH_MAX_SESSIONS_PER_USER:-5}"
+      TRIVY_DASHBOARD_AUTH_MAX_API_TOKENS_PER_USER: "${AUTH_MAX_API_TOKENS_PER_USER:-20}"
+      TRIVY_DASHBOARD_AUTH_BIND_USER_AGENT: "${AUTH_BIND_USER_AGENT:-true}"
+      TRIVY_DASHBOARD_AUTH_ISSUER: "${AUTH_ISSUER:-LayerScope}"
+      TRIVY_DASHBOARD_MAX_UPLOAD_BYTES: "${MAX_UPLOAD_BYTES:-21474836480}"
+      TRIVY_DASHBOARD_MAX_UPLOAD_REQUEST_BYTES: "${MAX_UPLOAD_REQUEST_BYTES:-42949672960}"
+      TRIVY_DASHBOARD_MAX_UPLOAD_FILES: "${MAX_UPLOAD_FILES:-20}"
+      TRIVY_DASHBOARD_MAX_RAW_RESULT_BYTES: "${MAX_RAW_RESULT_BYTES:-268435456}"
+      TRIVY_DASHBOARD_MAX_DISCOVERED_ARCHIVES: "${MAX_DISCOVERED_ARCHIVES:-10000}"
+      TRIVY_DASHBOARD_DISCOVERY_INTERVAL_SECONDS: "${DISCOVERY_INTERVAL_SECONDS:-30}"
+      TRIVY_DASHBOARD_MAX_JSON_BODY_BYTES: "${MAX_JSON_BODY_BYTES:-1048576}"
+      TRIVY_DASHBOARD_MAX_REPORT_IMPORT_BYTES: "${MAX_REPORT_IMPORT_BYTES:-67108864}"
+      TRIVY_DASHBOARD_STORAGE_RESERVE_BYTES: "${STORAGE_RESERVE_BYTES:-2147483648}"
+      TRIVY_DASHBOARD_HOST_STORAGE_PROBE_DIR: /host-storage-probe
+      TRIVY_DASHBOARD_MAX_SSE_CLIENTS: "${MAX_SSE_CLIENTS:-100}"
+      TRIVY_DASHBOARD_SSE_QUEUE_SIZE: "${SSE_QUEUE_SIZE:-200}"
+      TRIVY_DASHBOARD_AUTH_RATE_LIMIT_ATTEMPTS: "${AUTH_RATE_LIMIT_ATTEMPTS:-20}"
+      TRIVY_DASHBOARD_AUTH_RATE_LIMIT_WINDOW_SECONDS: "${AUTH_RATE_LIMIT_WINDOW_SECONDS:-60}"
+      TRIVY_DASHBOARD_MAX_BACKUP_BYTES: "${MAX_BACKUP_BYTES:-107374182400}"
+      TRIVY_CACHE_DIR: /data/trivy-cache
+    volumes:
+      - trivy-data:/data
+      - type: bind
+        source: ${IMAGE_DIR:-./sample-images}
+        target: /images
+        read_only: true
+      - type: bind
+        source: ${HOST_STORAGE_PROBE_DIR:-./storage-probe}
+        target: /host-storage-probe
+        read_only: true
+    networks:
+      - application
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    init: true
+    user: "101:101"
+    read_only: true
+    stop_signal: SIGTERM
+    stop_grace_period: 15s
+    pids_limit: 128
+    mem_limit: ${FRONTEND_MEMORY_LIMIT:-256m}
+    memswap_limit: ${FRONTEND_MEMORY_LIMIT:-256m}
+    cpus: "${FRONTEND_CPU_LIMIT:-0.50}"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 4096
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=101,gid=101,mode=1777
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:8080:8080"
+    networks:
+      - application
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  trivy-data:
+    name: ${LAYERSCOPE_DATA_VOLUME_NAME:-trivy-dashboard_trivy-data}
+
+networks:
+  application:
+    driver: bridge

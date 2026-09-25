@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'LAYERSCOPE_URL', defaultValue: 'https://layerscope.example.invalid',
+               description: 'LayerScope base URL')
+        string(name: 'IMAGE_REF', defaultValue: 'example/image:ci',
+               description: 'Locally available container image to scan')
+    }
+
+    environment {
+        LAYERSCOPE_TOKEN = credentials('layerscope-api-token')
+    }
+
+    stages {
+        stage('LayerScope vulnerability gate') {
+            steps {
+                sh '''
+                    set -eu
+                    mkdir -p work
+                    docker image save "$IMAGE_REF" --output work/ci-image.tar
+                    python3 -m pip install --disable-pip-version-check --no-deps ./cli
+                    layerscope --url "$LAYERSCOPE_URL" --compact upload --if-absent work/ci-image.tar > work/upload.json
+                    IMAGE_ID=$(python3 -c 'import json; a=json.load(open("work/upload.json", encoding="utf-8"))["result"]["archives"][0]; print(a.get("image_id") or a["response"]["uploaded"][0]["id"])')
+                    layerscope --url "$LAYERSCOPE_URL" --compact scan --image-id "$IMAGE_ID" --wait --timeout 3600 --fail-on high > work/scan.json
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'work/*.json', allowEmptyArchive: true
+        }
+    }
+}

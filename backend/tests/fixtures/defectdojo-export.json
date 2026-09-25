@@ -1,0 +1,35 @@
+{
+  "name": "LayerScope container vulnerability report",
+  "type": "LayerScope",
+  "version": "1.0.0",
+  "description": "Normalized LayerScope findings for DefectDojo Generic Findings Import.",
+  "findings": [
+    {
+      "title": "Synthetic finding",
+      "severity": "High",
+      "description": "Synthetic description",
+      "date": "2026-08-20",
+      "active": true,
+      "verified": false,
+      "static_finding": true,
+      "dynamic_finding": false,
+      "component_name": "example-package",
+      "component_version": "1.0",
+      "file_path": "debian",
+      "service": "example-image.tar",
+      "vuln_id_from_tool": "CVE-2026-0001",
+      "unique_id_from_tool": "e15985218edf31a8951d296533135fb8bd83a331aa140578b7c5b4693a5254be",
+      "vulnerability_ids": [
+        "CVE-2026-0001"
+      ],
+      "fix_available": true,
+      "fix_version": "1.1",
+      "references": "https://security.example/CVE-2026-0001",
+      "tags": [
+        "layerscope",
+        "container-image",
+        "layerscope-severity:high"
+      ]
+    }
+  ]
+}

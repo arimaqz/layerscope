@@ -1,0 +1,10 @@
+node_modules
+dist
+*.tsbuildinfo
+.vite
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.eslintcache
+vite.config.js
+vite.config.d.ts
