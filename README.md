@@ -4,6 +4,14 @@ A local-first dashboard for discovering Docker/OCI image archives (`.tar`), scan
 
 Current release: **1.0.0**. This release keeps the complete security baseline while replacing per-row database lookups with set-based queries, batching normalized scan inserts, throttling live-event refreshes, reducing idle polling, caching filesystem discovery briefly, paginating large archive tables, lazy-loading chart code, and tuning SQLite and Nginx for the local dashboard workload. It also includes a thin authenticated CLI for CI/CD automation without duplicating the scanner or job queue. The release images rebuild Trivy 0.74.0 from checksum-verified source with patched gRPC and Go dependencies and upgrade frontend OS packages during the build. Saved scans, raw JSON, authentication, exports, groups, and all existing workflows remain compatible.
 
+![Dashboard](./assets/images/dashboard.png)
+
+![Dashboard](./assets/images/insights.png)
+
+![Dashboard](./assets/images/report.png)
+
+![Dashboard](./assets/images/api.png)
+
 ## Documentation
 
 - [INSTALL.md](INSTALL.md): Docker Compose and native installation on Windows, Linux, and macOS
